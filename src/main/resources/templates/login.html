@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LinuxDo登录</title>
+    <!-- 添加Font Awesome图标库 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- 添加 SweetAlert2 库 -->
+    <link href="https://cdn.jsdelivr.net/npm/@sweetalert2/theme-material-ui@4/material-ui.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: #232526;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        /* 添加动态背景 */
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                linear-gradient(135deg, #232526 0%, #414345 100%),
+                radial-gradient(circle at 50% 50%, 
+                    rgba(255,255,255,0.05) 0%, 
+                    transparent 50%);
+            z-index: -1;
+        }
+
+        /* 添加网格背景 */
+        body::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+            background-size: 50px 50px;
+            z-index: -1;
+        }
+
+        @keyframes gradientMove {
+            0% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        .login-container {
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(10px);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .login-container:hover {
+            transform: translateY(-5px);
+        }
+
+        h1 {
+            color: #1a2a6c;
+            margin-bottom: 40px;
+            font-size: 28px;
+            font-weight: 600;
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #1a2a6c 0%, #b21f1f 100%);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(26, 42, 108, 0.4);
+        }
+
+        .login-btn:active {
+            transform: translateY(0);
+        }
+
+        .login-btn i {
+            font-size: 20px;
+        }
+
+        @media (max-width: 480px) {
+            .login-container {
+                margin: 20px;
+                padding: 30px;
+            }
+        }
+
+        /* 添加加载动画样式 */
+        .login-btn.loading {
+            position: relative;
+            pointer-events: none;
+            opacity: 0.8;
+        }
+
+        .login-btn.loading i {
+            animation: fa-spin 2s infinite linear;
+        }
+
+        @keyframes fa-spin {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <h1>Welcome to RequestUtil</h1>
+        <button onclick="handleLogin()" class="login-btn">
+            <i class="fas fa-terminal"></i>
+            LinuxDo一键登录
+        </button>
+    </div>
+
+    <script>
+        async function handleLogin() {
+            const loginBtn = document.querySelector('.login-btn');
+            const btnIcon = loginBtn.querySelector('i');
+            
+            // 保存原始图标类名
+            const originalIconClass = btnIcon.className;
+            
+            try {
+                // 添加加载状态
+                loginBtn.classList.add('loading');
+                btnIcon.className = 'fas fa-spinner';
+
+                // 直接跳转到认证URL，让浏览器处理重定向
+                window.location.href = '/oauth2/initiate';
+                
+            } catch (error) {
+                console.error('登录失败:', error);
+                await Swal.fire({
+                    title: '系统错误',
+                    text: '网络请求失败，请稍后重试',
+                    icon: 'error',
+                    confirmButtonText: '确定',
+                    confirmButtonColor: '#2193b0',
+                    background: 'rgba(255, 255, 255, 0.95)'
+                });
+                
+                // 恢复按钮状态
+                loginBtn.classList.remove('loading');
+                btnIcon.className = originalIconClass;
+            }
+        }
+    </script>
+</body>
+</html>

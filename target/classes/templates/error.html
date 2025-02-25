@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>错误提示</title>
+    <style>
+        /* 基础样式重置 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            background-color: #1a1a1a; /* 深色背景 */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        /* 错误提示卡片样式 */
+        .error-card {
+            background-color: #2d2d2d; /* 深灰色背景 */
+            border-radius: 12px; /* 增加圆角 */
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3); /* 更明显的阴影 */
+            padding: 40px;
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+            border: 1px solid #3d3d3d; /* 添加微妙的边框 */
+        }
+
+        /* 错误图标样式 */
+        .error-icon {
+            color: #ff4d4f;
+            font-size: 64px;
+            margin-bottom: 20px;
+        }
+
+        /* 错误标题样式 */
+        .error-title {
+            color: #ffffff; /* 白色文字 */
+            font-size: 24px;
+            margin-bottom: 15px;
+            font-weight: 500;
+        }
+
+        /* 错误信息样式 */
+        .error-message {
+            color: #b3b3b3; /* 浅灰色文字 */
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 25px;
+        }
+
+        /* 按钮样式 */
+        .btn {
+            display: inline-block;
+            padding: 12px 30px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background-color: #2a6af0; /* 更现代的蓝色 */
+            color: white;
+            border: none;
+            box-shadow: 0 2px 10px rgba(42, 106, 240, 0.3); /* 按钮阴影 */
+        }
+
+        .btn-primary:hover {
+            background-color: #3d7af5;
+            transform: translateY(-2px); /* 悬停时轻微上浮 */
+            box-shadow: 0 4px 15px rgba(42, 106, 240, 0.4);
+        }
+
+        /* 响应式调整 */
+        @media (max-width: 480px) {
+            .error-card {
+                padding: 30px;
+            }
+
+            .error-title {
+                font-size: 20px;
+            }
+
+            .error-message {
+                font-size: 14px;
+            }
+
+            .btn {
+                font-size: 14px;
+                padding: 10px 25px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="error-card">
+    <div class="error-icon">❌</div>
+    <h1 class="error-title">操作失败</h1>
+    <p class="error-message" id="errorMsg">
+        抱歉，出错了，或者请查看您的等级是否大于等于2级
+    </p>
+    <a href="javascript:history.back()" class="btn btn-primary">返回上一页</a>
+</div>
+
+<script>
+    // 获取URL中的错误信息参数
+    window.onload = function () {
+        const urlParams = new URLSearchParams(window.location.search);
+        const errorMessage = urlParams.get('message');
+        // 如果URL中包含错误信息，则显示具体错误信息
+        if (errorMessage) {
+            document.getElementById('errorMsg').textContent = decodeURIComponent(errorMessage);
+        }
+
+        // 确保默认信息显示
+        if (!errorMessage) {
+            document.getElementById('errorMsg').textContent = "抱歉，出错了，或者请查看您的等级是否大于等于2级";
+        }
+    }
+</script>
+</body>
+</html>

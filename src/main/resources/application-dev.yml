@@ -1,0 +1,28 @@
+spring:
+  data:
+    redis:
+      host: 替换为自己的路径
+      port: 替换为自己的路径
+      database: 1
+      password: 替换为自己的路径
+      timeout: 1800000
+      lettuce:
+        pool:
+          max-active: 20
+          max-wait: -1
+          max-idle: 5
+          min-idle: 0
+linux-do:
+  oauth2:
+    client:
+      registration:
+        client-id: 替换为自己的
+        client-secret: 替换为自己的
+        redirect-uri:  https://替换为自己的/oauth2/callback
+        authorization-grant-type: authorization_code
+        scope: read,write
+      provider:
+        authorization-uri: https://connect.linux.do/oauth2/authorize
+        token-uri: https://connect.linux.do/oauth2/token
+        user-info-uri: https://connect.linux.do/api/user
+        user-name-attribute: id

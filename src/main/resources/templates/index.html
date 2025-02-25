@@ -1,0 +1,1755 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>定时任务管理</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --dark-bg: #121212;
+            --dark-card: #1e1e1e;
+            --dark-input: #2d2d2d;
+            --accent-color: #7e57c2;
+            --text-primary: #e0e0e0;
+            --text-secondary: #aaaaaa;
+            --border-color: #333333;
+            --success-color: #4caf50;
+            --danger-color: #f44336;
+            --warning-color: #ff9800;
+        }
+        
+        body {
+            background-color: var(--dark-bg);
+            color: var(--text-primary);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+        }
+        
+        .navbar {
+            background-color: var(--dark-card);
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .navbar-brand {
+            color: var(--accent-color);
+            font-weight: bold;
+        }
+        
+        .nav-link {
+            color: var(--text-primary);
+        }
+        
+        .nav-link:hover, .nav-link.active {
+            color: var(--accent-color);
+        }
+        
+        .container {
+            max-width: 1400px;
+            padding: 0 30px;
+        }
+        
+        .card {
+            background-color: var(--dark-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        }
+        
+        .card-header {
+            background-color: rgba(0, 0, 0, 0.2);
+            border-bottom: 1px solid var(--border-color);
+            font-weight: 600;
+            color: var(--accent-color);
+        }
+        
+        .form-control, .form-select, input, textarea, select {
+            color: white !important;
+            background-color: var(--dark-input);
+            border: 1px solid var(--border-color);
+        }
+        
+        .form-control:focus, .form-select:focus, input:focus, textarea:focus, select:focus {
+            color: white !important;
+            background-color: var(--dark-input);
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 0.25rem rgba(126, 87, 194, 0.25);
+        }
+        
+        .btn {
+            padding: 8px 20px;
+            border-radius: 8px;
+            font-weight: 500;
+        }
+        
+        .btn-primary {
+            background-color: var(--accent-color);
+            border-color: var(--accent-color);
+        }
+        
+        .btn-primary:hover {
+            background-color: #6a4caf;
+            border-color: #6a4caf;
+        }
+        
+        .btn-outline-primary {
+            color: var(--accent-color);
+            border-color: var(--accent-color);
+        }
+        
+        .btn-outline-primary:hover {
+            background-color: var(--accent-color);
+            color: white;
+        }
+        
+        .table {
+            color: var(--text-primary);
+        }
+        
+        .table thead th {
+            border-bottom-color: var(--border-color);
+            color: var(--accent-color);
+        }
+        
+        .table td, .table th {
+            border-color: var(--border-color);
+        }
+        
+        .badge {
+            font-weight: 500;
+        }
+        
+        .badge-success {
+            background-color: var(--success-color);
+        }
+        
+        .badge-danger {
+            background-color: var(--danger-color);
+        }
+        
+        .badge-warning {
+            background-color: var(--warning-color);
+            color: #212529;
+        }
+        
+        .form-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .key-value-pair {
+            display: flex;
+            margin-bottom: 10px;
+        }
+        
+        .key-value-pair input {
+            flex: 1;
+            margin-right: 5px;
+        }
+        
+        .remove-btn {
+            color: var(--danger-color);
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .add-btn {
+            color: var(--success-color);
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .task-result {
+            background-color: rgba(0, 0, 0, 0.2);
+            border-radius: 4px;
+            padding: 10px;
+            margin-top: 10px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .timestamp {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+        
+        .status-badge {
+            font-size: 0.75rem;
+            padding: 0.25em 0.6em;
+            border-radius: 10px;
+        }
+        
+        .curl-command {
+            background-color: #2d2d2d;
+            padding: 8px;
+            border-radius: 4px;
+            margin-bottom: 8px;
+            overflow-x: auto;
+        }
+        
+        .accordion-button {
+            background-color: var(--dark-card);
+            color: var(--text-primary);
+        }
+        
+        .accordion-button:not(.collapsed) {
+            background-color: rgba(126, 87, 194, 0.1);
+            color: var(--accent-color);
+        }
+        
+        .accordion-button:focus {
+            box-shadow: 0 0 0 0.25rem rgba(126, 87, 194, 0.25);
+        }
+        
+        .accordion-body {
+            background-color: var(--dark-card);
+        }
+        
+        .search-container {
+            margin-bottom: 20px;
+        }
+        
+        .pagination .page-link {
+            background-color: var(--dark-card);
+            border-color: var(--border-color);
+            color: var(--text-primary);
+        }
+        
+        .pagination .page-link:hover {
+            background-color: var(--accent-color);
+            color: white;
+        }
+        
+        .pagination .page-item.active .page-link {
+            background-color: var(--accent-color);
+            border-color: var(--accent-color);
+        }
+        
+        .loading-spinner {
+            display: inline-block;
+            width: 1rem;
+            height: 1rem;
+            border: 0.2em solid currentColor;
+            border-right-color: transparent;
+            border-radius: 50%;
+            animation: spinner-border .75s linear infinite;
+        }
+        
+        @keyframes spinner-border {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* 确保模态框中的输入框也是白色文字 */
+        .modal .form-control, .modal .form-select, .modal input, .modal textarea, .modal select {
+            color: white !important;
+        }
+        
+        /* 确保搜索框中的文字可见 */
+        #search-task-id, #search-task-name {
+            color: white !important;
+        }
+        
+        /* 改进CURL命令输入框样式 */
+        #curlCommand {
+            color: white !important;
+            font-family: monospace;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+        
+        /* 添加以下样式规则，使占位符文本更加明亮 */
+        ::placeholder {
+            color: rgba(255, 255, 255, 0.6) !important;
+            opacity: 1;
+        }
+        
+        :-ms-input-placeholder {
+            color: rgba(255, 255, 255, 0.6) !important;
+        }
+        
+        ::-ms-input-placeholder {
+            color: rgba(255, 255, 255, 0.6) !important;
+        }
+        
+        /* 确保所有输入元素的文本颜色为白色 */
+        input, textarea, select, .form-control, .form-select {
+            color: white !important;
+        }
+        
+        /* 确保禁用状态的输入框文本也可见 */
+        input:disabled, textarea:disabled, select:disabled, 
+        .form-control:disabled, .form-select:disabled {
+            color: rgba(255, 255, 255, 0.7) !important;
+            background-color: rgba(45, 45, 45, 0.7);
+        }
+        
+        /* 增强输入框的对比度 */
+        .form-control, .form-select {
+            background-color: #2d2d2d;
+            border: 1px solid #444444;
+        }
+        
+        /* 输入框获得焦点时的样式 */
+        .form-control:focus, .form-select:focus {
+            background-color: #333333;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 0.25rem rgba(126, 87, 194, 0.25);
+        }
+        
+        /* 确保模态框中的输入元素也使用相同的样式 */
+        .modal input, .modal textarea, .modal select,
+        .modal .form-control, .modal .form-select {
+            color: white !important;
+            background-color: #2d2d2d;
+        }
+        
+        /* 确保CURL命令输入框中的文本清晰可见 */
+        #curlCommand {
+            color: white !important;
+            background-color: #333333;
+            font-family: monospace;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+        
+        /* 确保所有文本在深色背景上可见 */
+        .accordion-item, .card, .modal-content {
+            color: var(--text-primary) !important;
+        }
+        
+        /* 确保任务结果中的文本颜色 */
+        .task-result, .response-body, pre, code {
+            color: var(--text-primary) !important;
+            background-color: rgba(0, 0, 0, 0.3) !important;
+        }
+        
+        /* 确保时间戳和其他次要文本可见 */
+        .text-muted, small, .timestamp {
+            color: #aaaaaa !important;
+        }
+        
+        /* 确保折叠面板中的内容可见 */
+        .accordion-button, .accordion-body {
+            color: var(--text-primary) !important;
+        }
+        
+        /* 确保卡片头部和内容的文本可见 */
+        .card-header, .card-body {
+            color: var(--text-primary) !important;
+        }
+        
+        /* 增强响应内容的可读性 */
+        .response-body {
+            padding: 12px !important;
+            border-radius: 6px !important;
+            border: 1px solid var(--border-color) !important;
+            font-family: 'Consolas', 'Monaco', monospace !important;
+            font-size: 0.9rem !important;
+            line-height: 1.5 !important;
+        }
+        
+        /* 复制按钮样式 */
+        .copy-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background-color: rgba(126, 87, 194, 0.2);
+            color: var(--accent-color);
+            border: 1px solid var(--accent-color);
+            border-radius: 4px;
+            padding: 3px 8px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            opacity: 0.7;
+        }
+        
+        .copy-btn:hover {
+            background-color: rgba(126, 87, 194, 0.4);
+            opacity: 1;
+        }
+        
+        .copy-btn.copied {
+            background-color: rgba(76, 175, 80, 0.2);
+            color: var(--success-color);
+            border-color: var(--success-color);
+        }
+        
+        /* 使内容容器支持相对定位，以便放置复制按钮 */
+        .curl-command, .response-container {
+            position: relative;
+            padding-top: 30px !important;
+        }
+        
+        /* 确保代码和响应内容有足够的右边距，避免被按钮遮挡 */
+        .curl-command code, .task-result {
+            padding-right: 70px;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg mb-4">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="bi bi-clock-history"></i> 定时任务管理
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#" id="nav-create">创建任务</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" id="nav-list">任务列表</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- 创建任务表单 -->
+        <div id="task-form-container">
+            <div class="card">
+                <div class="card-header form-header">
+                    <span>创建定时任务</span>
+                </div>
+                <div class="card-body">
+                    <form id="task-form">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="taskName" class="form-label">任务名称</label>
+                                <input type="text" class="form-control" id="taskName" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="cron" class="form-label">Cron 表达式</label>
+                                <input type="text" class="form-control" id="cron" required placeholder="例如: 0/5 * * * * ?">
+                                <div class="form-text text-muted">秒 分 时 日 月 周</div>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="method" class="form-label">请求方式</label>
+                                <select class="form-select" id="method" required>
+                                    <option value="GET">GET</option>
+                                    <option value="POST">POST</option>
+                                    <option value="PUT">PUT</option>
+                                    <option value="DELETE">DELETE</option>
+                                    <option value="PATCH">PATCH</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="url" class="form-label">请求 URL</label>
+                                <input type="url" class="form-control" id="url" required placeholder="https://example.com/api/endpoint">
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="proxyHost" class="form-label">代理主机 (可选)</label>
+                                <input type="text" class="form-control" id="proxyHost" placeholder="proxy.example.com">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="proxyPort" class="form-label">代理端口 (可选)</label>
+                                <input type="number" class="form-control" id="proxyPort" placeholder="8080">
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label d-flex justify-content-between">
+                                <span>请求头</span>
+                                <button type="button" class="add-btn" id="add-header">
+                                    <i class="bi bi-plus-circle"></i> 添加请求头
+                                </button>
+                            </label>
+                            <div id="headers-container">
+                                <div class="key-value-pair">
+                                    <input type="text" class="form-control header-key" placeholder="键" value="Content-Type">
+                                    <input type="text" class="form-control header-value" placeholder="值" value="application/json">
+                                    <button type="button" class="remove-btn">
+                                        <i class="bi bi-x-circle"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="body" class="form-label">请求体 (JSON)</label>
+                            <textarea class="form-control" id="body" rows="4" placeholder='{"key": "value"}'></textarea>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label d-flex justify-content-between">
+                                <span>表单数据 (Form Data)</span>
+                                <button type="button" class="add-btn" id="add-form-data">
+                                    <i class="bi bi-plus-circle"></i> 添加表单数据
+                                </button>
+                            </label>
+                            <div id="form-data-container"></div>
+                        </div>
+                        
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-calendar-plus"></i> 创建定时任务
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 任务列表 -->
+        <div id="task-list-container" style="display: none;">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span>定时任务列表</span>
+                    <button class="btn btn-sm btn-outline-primary" id="refresh-list">
+                        <i class="bi bi-arrow-clockwise"></i> 刷新
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="search-container">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <input type="text" class="form-control" id="search-task-id" placeholder="任务ID">
+                            </div>
+                            <div class="col-md-4">
+                                <input type="text" class="form-control" id="search-task-name" placeholder="任务名称">
+                            </div>
+                            <div class="col-md-2">
+                                <div class="form-check form-switch mt-2">
+                                    <input class="form-check-input" type="checkbox" id="fuzzy-match">
+                                    <label class="form-check-label" for="fuzzy-match">模糊匹配</label>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <button class="btn btn-primary w-100" id="search-btn">
+                                    <i class="bi bi-search"></i> 搜索
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="task-results">
+                        <div class="text-center py-5 text-muted">
+                            <i class="bi bi-clock-history fs-1"></i>
+                            <p class="mt-3">暂无任务数据</p>
+                        </div>
+                    </div>
+                    
+                    <nav aria-label="Page navigation" class="mt-4">
+                        <ul class="pagination justify-content-center" id="pagination">
+                            <!-- 分页将通过 JavaScript 动态生成 -->
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 提示框 -->
+    <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 5">
+        <div id="toast-container"></div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 导航切换
+            const navCreate = document.getElementById('nav-create');
+            const navList = document.getElementById('nav-list');
+            const taskFormContainer = document.getElementById('task-form-container');
+            const taskListContainer = document.getElementById('task-list-container');
+            
+            navCreate.addEventListener('click', function(e) {
+                e.preventDefault();
+                taskFormContainer.style.display = 'block';
+                taskListContainer.style.display = 'none';
+                navCreate.classList.add('active');
+                navList.classList.remove('active');
+            });
+            
+            navList.addEventListener('click', function(e) {
+                e.preventDefault();
+                taskFormContainer.style.display = 'none';
+                taskListContainer.style.display = 'block';
+                navCreate.classList.remove('active');
+                navList.classList.add('active');
+                fetchTaskResults();
+            });
+            
+            // 添加请求头
+            const addHeaderBtn = document.getElementById('add-header');
+            const headersContainer = document.getElementById('headers-container');
+            
+            addHeaderBtn.addEventListener('click', function() {
+                const keyValuePair = document.createElement('div');
+                keyValuePair.className = 'key-value-pair';
+                keyValuePair.innerHTML = `
+                    <input type="text" class="form-control header-key" placeholder="键">
+                    <input type="text" class="form-control header-value" placeholder="值">
+                    <button type="button" class="remove-btn">
+                        <i class="bi bi-x-circle"></i>
+                    </button>
+                `;
+                headersContainer.appendChild(keyValuePair);
+                
+                keyValuePair.querySelector('.remove-btn').addEventListener('click', function() {
+                    keyValuePair.remove();
+                });
+            });
+            
+            // 添加表单数据
+            const addFormDataBtn = document.getElementById('add-form-data');
+            const formDataContainer = document.getElementById('form-data-container');
+            
+            addFormDataBtn.addEventListener('click', function() {
+                const keyValuePair = document.createElement('div');
+                keyValuePair.className = 'key-value-pair';
+                keyValuePair.innerHTML = `
+                    <input type="text" class="form-control form-data-key" placeholder="键">
+                    <input type="text" class="form-control form-data-value" placeholder="值">
+                    <button type="button" class="remove-btn">
+                        <i class="bi bi-x-circle"></i>
+                    </button>
+                `;
+                formDataContainer.appendChild(keyValuePair);
+                
+                keyValuePair.querySelector('.remove-btn').addEventListener('click', function() {
+                    keyValuePair.remove();
+                });
+            });
+            
+            // 初始化移除按钮事件
+            document.querySelectorAll('.remove-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    this.closest('.key-value-pair').remove();
+                });
+            });
+            
+            // 表单提交
+            const taskForm = document.getElementById('task-form');
+            
+            taskForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                // 收集表单数据
+                const taskData = {
+                    taskName: document.getElementById('taskName').value,
+                    method: document.getElementById('method').value,
+                    url: document.getElementById('url').value,
+                    cron: document.getElementById('cron').value,
+                    body: document.getElementById('body').value,
+                    headers: {},
+                    formData: {}
+                };
+                
+                // 代理设置（可选）
+                const proxyHost = document.getElementById('proxyHost').value;
+                const proxyPort = document.getElementById('proxyPort').value;
+                
+                if (proxyHost) {
+                    taskData.proxyHost = proxyHost;
+                }
+                
+                if (proxyPort) {
+                    taskData.proxyPort = parseInt(proxyPort);
+                }
+                
+                // 收集请求头
+                document.querySelectorAll('.key-value-pair').forEach(pair => {
+                    const keyInput = pair.querySelector('.header-key');
+                    const valueInput = pair.querySelector('.header-value');
+                    
+                    if (keyInput && valueInput && keyInput.value.trim()) {
+                        taskData.headers[keyInput.value.trim()] = valueInput.value;
+                    }
+                });
+                
+                // 收集表单数据
+                document.querySelectorAll('#form-data-container .key-value-pair').forEach(pair => {
+                    const keyInput = pair.querySelector('.form-data-key');
+                    const valueInput = pair.querySelector('.form-data-value');
+                    
+                    if (keyInput && valueInput && keyInput.value.trim()) {
+                        taskData.formData[keyInput.value.trim()] = valueInput.value;
+                    }
+                });
+                
+                // 发送请求
+                fetch('/api/tasks/schedule', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(taskData)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.code === 0) {
+                        // 显示成功消息 - 直接使用data.data，无论它是字符串还是对象
+                        showToast('成功', data.data || '任务已成功调度', 'success');
+                        
+                        // 重置表单
+                        taskForm.reset();
+                        
+                        // 清空动态添加的表单项
+                        formDataContainer.innerHTML = '';
+                        
+                        // 保留一个默认的请求头
+                        headersContainer.innerHTML = `
+                            <div class="key-value-pair">
+                                <input type="text" class="form-control header-key" placeholder="键" value="Content-Type">
+                                <input type="text" class="form-control header-value" placeholder="值" value="application/json">
+                                <button type="button" class="remove-btn">
+                                    <i class="bi bi-x-circle"></i>
+                                </button>
+                            </div>
+                        `;
+                        
+                        // 重新绑定移除按钮事件
+                        document.querySelectorAll('.remove-btn').forEach(btn => {
+                            btn.addEventListener('click', function() {
+                                this.closest('.key-value-pair').remove();
+                            });
+                        });
+                        
+                        // 切换到任务列表标签
+                        document.getElementById('task-list-tab').click();
+                        
+                        // 刷新任务列表
+                        setTimeout(fetchTaskResults, 500);
+                    } else {
+                        showToast('错误', data.msg || '调度任务失败', 'danger');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    // showToast('错误', '网络错误，请稍后重试', 'danger');
+                });
+            });
+            
+            // 刷新任务列表
+            const refreshListBtn = document.getElementById('refresh-list');
+            
+            refreshListBtn.addEventListener('click', function() {
+                fetchTaskResults();
+            });
+            
+            // 搜索任务
+            const searchBtn = document.getElementById('search-btn');
+            
+            searchBtn.addEventListener('click', function() {
+                fetchTaskResults();
+            });
+            
+            // 获取任务结果
+            function fetchTaskResults() {
+                const taskId = document.getElementById('search-task-id').value.trim();
+                const taskName = document.getElementById('search-task-name').value.trim();
+                const fuzzyMatch = document.getElementById('fuzzy-match').checked;
+                
+                let url = '/api/tasks/results';
+                const params = new URLSearchParams();
+                
+                if (taskId) {
+                    params.append('taskId', taskId);
+                }
+                
+                if (taskName) {
+                    params.append('taskName', taskName);
+                }
+                
+                if (fuzzyMatch) {
+                    params.append('fuzzyMatch', 'true');
+                }
+                
+                if (params.toString()) {
+                    url += '?' + params.toString();
+                }
+                
+                const taskResults = document.getElementById('task-results');
+                taskResults.innerHTML = '<div class="text-center p-4"><span class="loading-spinner"></span> 加载中...</div>';
+                
+                fetch(url)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.code === 0) {
+                            displayTaskResults(data.data);
+                        } else {
+                            taskResults.innerHTML = `<div class="alert alert-danger">加载失败: ${data.msg || '未知错误'}</div>`;
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        // taskResults.innerHTML = '<div class="alert alert-danger">网络错误，请稍后重试</div>';
+                    });
+            }
+            
+            // 修改任务结果显示函数，将取消任务按钮移到外部
+            function displayTaskResults(results) {
+                const taskResults = document.getElementById('task-results');
+                taskResults.innerHTML = '';
+                
+                if (!results || results.length === 0) {
+                    taskResults.innerHTML = `
+                        <div class="text-center py-5 text-muted">
+                            <i class="bi bi-search fs-1"></i>
+                            <p class="mt-3">未找到任务数据</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                // 创建任务列表
+                const accordion = document.createElement('div');
+                accordion.className = 'accordion';
+                accordion.id = 'tasksAccordion';
+                
+                results.forEach((task, index) => {
+                    const taskId = task.taskId;
+                    const taskName = task.taskName || '未命名任务';
+                    const createTime = task.createTime || '未知时间';
+                    const resultCount = task.resData ? task.resData.length : 0;
+                    
+                    // 获取最新的执行结果状态
+                    let latestStatus = '未执行';
+                    let statusClass = 'bg-secondary';
+                    
+                    if (resultCount > 0) {
+                        const latestResult = task.resData[0];
+                        const statusCode = latestResult.statusCode;
+                        
+                        if (statusCode >= 200 && statusCode < 300) {
+                            latestStatus = '成功';
+                            statusClass = 'bg-success';
+                        } else {
+                            latestStatus = '失败';
+                            statusClass = 'bg-danger';
+                        }
+                    }
+                    
+                    // 创建折叠面板
+                    const accordionItem = document.createElement('div');
+                    accordionItem.className = 'accordion-item bg-dark border-secondary mb-3';
+                    
+                    // 面板头部 - 包含取消任务按钮
+                    accordionItem.innerHTML = `
+                        <h2 class="accordion-header" id="heading${taskId}">
+                            <div class="d-flex w-100">
+                                <button class="accordion-button collapsed bg-dark text-light flex-grow-1" type="button" 
+                                        data-bs-toggle="collapse" data-bs-target="#collapse${taskId}" 
+                                        aria-expanded="false" aria-controls="collapse${taskId}">
+                                    <div class="d-flex justify-content-between align-items-center w-100 me-3">
+                                        <div>
+                                            <span class="fw-bold">${escapeHtml(taskName)}</span>
+                                            <span class="text-muted ms-2">(ID: ${taskId})</span>
+                                        </div>
+                                        <div>
+                                            <span class="badge ${statusClass} me-2">${latestStatus}</span>
+                                            <small class="text-muted">${createTime}</small>
+                                            <span class="badge bg-info ms-2">${resultCount} 次执行</span>
+                                        </div>
+                                    </div>
+                                </button>
+                                <button class="btn btn-outline-danger cancel-task-btn" 
+                                        data-task-id="${taskId}" 
+                                        style="border-radius: 0 4px 4px 0; border: 1px solid var(--border-color);">
+                                    <i class="bi bi-x-circle"></i>
+                                </button>
+                            </div>
+                        </h2>
+                        <div id="collapse${taskId}" class="accordion-collapse collapse" 
+                             aria-labelledby="heading${taskId}" data-bs-parent="#tasksAccordion">
+                            <div class="accordion-body">
+                                <div class="task-results-container">
+                                    <!-- 任务执行结果将在这里动态添加 -->
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    
+                    accordion.appendChild(accordionItem);
+                    
+                    // 添加任务执行结果
+                    setTimeout(() => {
+                        const resultsContainer = accordionItem.querySelector('.task-results-container');
+                        
+                        if (task.resData && task.resData.length > 0) {
+                            task.resData.forEach((result, resultIndex) => {
+                                const resultCard = document.createElement('div');
+                                resultCard.className = 'card bg-dark border-secondary mb-3';
+                                
+                                // 格式化时间戳
+                                const timestamp = result.timestamp ? new Date(result.timestamp).toLocaleString() : '未知时间';
+                                
+                                // 格式化响应内容 - 移除截断和点击展开功能
+                                let formattedResponse = result.responseBody || '无响应内容';
+                                try {
+                                    if (formattedResponse.startsWith('{') || formattedResponse.startsWith('[')) {
+                                        // 始终显示完整的格式化JSON，不再截断
+                                        const parsedJson = JSON.parse(formattedResponse);
+                                        formattedResponse = JSON.stringify(parsedJson, null, 2);
+                                    }
+                                } catch (e) {
+                                    // 如果不是有效的JSON，保持原样
+                                    console.error('格式化JSON失败:', e);
+                                }
+                                
+                                resultCard.innerHTML = `
+                                    <div class="card-header d-flex justify-content-between align-items-center">
+                                        <span>执行结果 #${resultIndex + 1}</span>
+                                        <div>
+                                            <span class="badge ${result.statusCode >= 200 && result.statusCode < 300 ? 'bg-success' : 'bg-danger'}">
+                                                状态码: ${result.statusCode || 'N/A'}
+                                            </span>
+                                            <small class="text-muted ms-2">${timestamp}</small>
+                                        </div>
+                                    </div>
+                                    <div class="card-body">
+                                        <h6>请求信息</h6>
+                                        <div class="curl-command mb-3">
+                                            <button class="copy-btn" data-copy-target="curl-${taskId}-${resultIndex}">
+                                                <i class="bi bi-clipboard"></i> 复制
+                                            </button>
+                                            <code id="curl-${taskId}-${resultIndex}">${escapeHtml(result.curl || '无请求信息')}</code>
+                                        </div>
+                                        
+                                        <h6>响应内容</h6>
+                                        <div class="response-container">
+                                            <button class="copy-btn" data-copy-target="response-${taskId}-${resultIndex}">
+                                                <i class="bi bi-clipboard"></i> 复制
+                                            </button>
+                                            <pre id="response-${taskId}-${resultIndex}" class="task-result response-body">${escapeHtml(formattedResponse)}</pre>
+                                        </div>
+                                    </div>
+                                `;
+                                
+                                resultsContainer.appendChild(resultCard);
+                                
+                                // 添加复制功能
+                                resultCard.querySelectorAll('.copy-btn').forEach(btn => {
+                                    btn.addEventListener('click', function(e) {
+                                        e.stopPropagation();
+                                        const targetId = this.getAttribute('data-copy-target');
+                                        const textToCopy = document.getElementById(targetId).textContent;
+                                        
+                                        navigator.clipboard.writeText(textToCopy).then(() => {
+                                            // 显示复制成功状态
+                                            this.innerHTML = '<i class="bi bi-check"></i> 已复制';
+                                            this.classList.add('copied');
+                                            
+                                            // 2秒后恢复原状
+                                            setTimeout(() => {
+                                                this.innerHTML = '<i class="bi bi-clipboard"></i> 复制';
+                                                this.classList.remove('copied');
+                                            }, 2000);
+                                        }).catch(err => {
+                                            console.error('复制失败:', err);
+                                            showToast('错误', '复制失败，请手动复制', 'danger');
+                                        });
+                                    });
+                                });
+                            });
+                        } else {
+                            resultsContainer.innerHTML = `
+                                <div class="alert alert-info">
+                                    此任务尚未执行或没有执行结果
+                                </div>
+                            `;
+                        }
+                        
+                        // 添加取消任务按钮事件
+                        const cancelBtn = accordionItem.querySelector('.cancel-task-btn');
+                        cancelBtn.addEventListener('click', function(e) {
+                            e.stopPropagation(); // 阻止事件冒泡，避免触发折叠面板
+                            const taskId = this.getAttribute('data-task-id');
+                            cancelTask(taskId);
+                        });
+                    }, 0);
+                });
+                
+                taskResults.appendChild(accordion);
+            }
+            
+            // 取消任务
+            function cancelTask(taskId) {
+                if (!confirm('确定要取消此任务吗？此操作不可恢复。')) {
+                    return;
+                }
+                
+                fetch(`/api/tasks/cancel?taskId=${taskId}`, {
+                    method: 'POST'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.code === 0) {
+                        showToast('成功', '任务已成功取消', 'success');
+                        // 刷新任务列表
+                        fetchTaskResults();
+                    } else {
+                        showToast('错误', data.msg || '取消任务失败', 'danger');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    // showToast('错误', '网络错误，请稍后重试', 'danger');
+                });
+            }
+            
+            // 显示提示框
+            function showToast(title, message, type) {
+                const toastContainer = document.getElementById('toast-container');
+                const toastId = 'toast-' + Date.now();
+                
+                const toast = document.createElement('div');
+                toast.className = `toast align-items-center text-white bg-${type} border-0`;
+                toast.setAttribute('id', toastId);
+                toast.setAttribute('role', 'alert');
+                toast.setAttribute('aria-live', 'assertive');
+                toast.setAttribute('aria-atomic', 'true');
+                
+                toast.innerHTML = `
+                    <div class="d-flex">
+                        <div class="toast-body">
+                            <strong>${title}</strong>: ${message}
+                        </div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                    </div>
+                `;
+                
+                toastContainer.appendChild(toast);
+                
+                const bsToast = new bootstrap.Toast(toast, {
+                    autohide: true,
+                    delay: 3000
+                });
+                
+                bsToast.show();
+                
+                // 自动移除 toast 元素
+                toast.addEventListener('hidden.bs.toast', function() {
+                    toast.remove();
+                });
+            }
+            
+            // 根据请求方式切换显示框
+            const methodSelect = document.getElementById('method');
+            const bodyContainer = document.getElementById('body').closest('.mb-3');
+            const formDataSection = document.getElementById('add-form-data').closest('.mb-3');
+            
+            function toggleRequestBodyFields() {
+                const method = methodSelect.value;
+                if (method === 'GET' || method === 'DELETE') {
+                    bodyContainer.style.display = 'none';
+                    formDataSection.style.display = 'block';
+                } else if (method === 'POST' || method === 'PUT' || method === 'PATCH') {
+                    bodyContainer.style.display = 'block';
+                    formDataSection.style.display = 'block';
+                }
+            }
+            
+            // 初始化时执行一次
+            toggleRequestBodyFields();
+            
+            // 当请求方式改变时执行
+            methodSelect.addEventListener('change', toggleRequestBodyFields);
+            
+            // Cron表达式选择器
+            const cronInput = document.getElementById('cron');
+            const cronHelp = cronInput.nextElementSibling;
+            
+            // 创建Cron选择器按钮
+            const cronSelectorBtn = document.createElement('button');
+            cronSelectorBtn.type = 'button';
+            cronSelectorBtn.className = 'btn btn-sm btn-outline-secondary mt-2';
+            cronSelectorBtn.innerHTML = '<i class="bi bi-calendar3"></i> 图形化选择Cron表达式';
+            cronHelp.parentNode.insertBefore(cronSelectorBtn, cronHelp.nextSibling);
+            
+            // Cron选择器模态框
+            const cronSelectorModal = document.createElement('div');
+            cronSelectorModal.className = 'modal fade';
+            cronSelectorModal.id = 'cronSelectorModal';
+            cronSelectorModal.tabIndex = '-1';
+            cronSelectorModal.setAttribute('aria-labelledby', 'cronSelectorModalLabel');
+            cronSelectorModal.setAttribute('aria-hidden', 'true');
+            
+            cronSelectorModal.innerHTML = `
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content bg-dark text-light">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="cronSelectorModalLabel">Cron表达式选择器</h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">预设表达式</label>
+                                    <select class="form-select" id="cronPresets">
+                                        <option value="">选择预设...</option>
+                                        <option value="0 0 * * * ?">每小时 (0 0 * * * ?)</option>
+                                        <option value="0 0 0 * * ?">每天午夜 (0 0 0 * * ?)</option>
+                                        <option value="0 0 12 * * ?">每天中午 (0 0 12 * * ?)</option>
+                                        <option value="0 0 0 ? * MON">每周一午夜 (0 0 0 ? * MON)</option>
+                                        <option value="0 0 0 1 * ?">每月1号午夜 (0 0 0 1 * ?)</option>
+                                        <option value="0/30 * * * * ?">每30秒 (0/30 * * * * ?)</option>
+                                        <option value="0 0/5 * * * ?">每5分钟 (0 0/5 * * * ?)</option>
+                                        <option value="0 0 0/1 * * ?">每1小时 (0 0 0/1 * * ?)</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">当前表达式</label>
+                                    <input type="text" class="form-control" id="cronPreview" readonly>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-2">
+                                    <label class="form-label">秒 (0-59)</label>
+                                    <select class="form-select" id="cronSecond">
+                                        <option value="0">0</option>
+                                        <option value="*">每秒 (*)</option>
+                                        <option value="0/5">每5秒 (0/5)</option>
+                                        <option value="0/10">每10秒 (0/10)</option>
+                                        <option value="0/30">每30秒 (0/30)</option>
+                                        <option value="custom">自定义...</option>
+                                    </select>
+                                    <input type="text" class="form-control mt-1" id="cronSecondCustom" placeholder="自定义值" style="display:none;">
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="form-label">分 (0-59)</label>
+                                    <select class="form-select" id="cronMinute">
+                                        <option value="0">0</option>
+                                        <option value="*">每分钟 (*)</option>
+                                        <option value="0/5">每5分钟 (0/5)</option>
+                                        <option value="0/10">每10分钟 (0/10)</option>
+                                        <option value="0/30">每30分钟 (0/30)</option>
+                                        <option value="custom">自定义...</option>
+                                    </select>
+                                    <input type="text" class="form-control mt-1" id="cronMinuteCustom" placeholder="自定义值" style="display:none;">
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="form-label">时 (0-23)</label>
+                                    <select class="form-select" id="cronHour">
+                                        <option value="0">0</option>
+                                        <option value="*">每小时 (*)</option>
+                                        <option value="0/2">每2小时 (0/2)</option>
+                                        <option value="0/4">每4小时 (0/4)</option>
+                                        <option value="0/6">每6小时 (0/6)</option>
+                                        <option value="0/12">每12小时 (0/12)</option>
+                                        <option value="custom">自定义...</option>
+                                    </select>
+                                    <input type="text" class="form-control mt-1" id="cronHourCustom" placeholder="自定义值" style="display:none;">
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="form-label">日 (1-31)</label>
+                                    <select class="form-select" id="cronDay">
+                                        <option value="?">任意 (?)</option>
+                                        <option value="*">每日 (*)</option>
+                                        <option value="1">1号</option>
+                                        <option value="15">15号</option>
+                                        <option value="L">最后一天 (L)</option>
+                                        <option value="custom">自定义...</option>
+                                    </select>
+                                    <input type="text" class="form-control mt-1" id="cronDayCustom" placeholder="自定义值" style="display:none;">
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="form-label">月 (1-12)</label>
+                                    <select class="form-select" id="cronMonth">
+                                        <option value="*">每月 (*)</option>
+                                        <option value="1">一月</option>
+                                        <option value="6">六月</option>
+                                        <option value="12">十二月</option>
+                                        <option value="custom">自定义...</option>
+                                    </select>
+                                    <input type="text" class="form-control mt-1" id="cronMonthCustom" placeholder="自定义值" style="display:none;">
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="form-label">周 (1-7)</label>
+                                    <select class="form-select" id="cronWeek">
+                                        <option value="?">任意 (?)</option>
+                                        <option value="*">每周 (*)</option>
+                                        <option value="MON">周一</option>
+                                        <option value="WED">周三</option>
+                                        <option value="FRI">周五</option>
+                                        <option value="custom">自定义...</option>
+                                    </select>
+                                    <input type="text" class="form-control mt-1" id="cronWeekCustom" placeholder="自定义值" style="display:none;">
+                                </div>
+                            </div>
+                            
+                            <div class="mt-4">
+                                <h6>Cron表达式说明：</h6>
+                                <ul class="small">
+                                    <li>秒：0-59 或 * 表示每秒</li>
+                                    <li>分：0-59 或 * 表示每分钟</li>
+                                    <li>时：0-23 或 * 表示每小时</li>
+                                    <li>日：1-31 或 * 表示每天，? 表示不指定</li>
+                                    <li>月：1-12 或 JAN-DEC 或 * 表示每月</li>
+                                    <li>周：1-7 或 SUN-SAT 或 * 表示每周，? 表示不指定</li>
+                                    <li>日和周不能同时指定具体值，其中一个必须为 ?</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                            <button type="button" class="btn btn-primary" id="applyCron">应用</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(cronSelectorModal);
+            
+            // 初始化模态框
+            const cronModal = new bootstrap.Modal(document.getElementById('cronSelectorModal'));
+            
+            // 打开Cron选择器
+            cronSelectorBtn.addEventListener('click', function() {
+                // 如果已有值，预填充
+                if (cronInput.value) {
+                    document.getElementById('cronPreview').value = cronInput.value;
+                } else {
+                    document.getElementById('cronPreview').value = '0 0 * * * ?';
+                }
+                cronModal.show();
+            });
+            
+            // 处理预设选择
+            document.getElementById('cronPresets').addEventListener('change', function() {
+                if (this.value) {
+                    document.getElementById('cronPreview').value = this.value;
+                }
+            });
+            
+            // 处理自定义选择
+            const cronFields = ['Second', 'Minute', 'Hour', 'Day', 'Month', 'Week'];
+            cronFields.forEach(field => {
+                const select = document.getElementById('cron' + field);
+                const customInput = document.getElementById('cron' + field + 'Custom');
+                
+                select.addEventListener('change', function() {
+                    if (this.value === 'custom') {
+                        customInput.style.display = 'block';
+                    } else {
+                        customInput.style.display = 'none';
+                        updateCronPreview();
+                    }
+                });
+                
+                customInput.addEventListener('input', updateCronPreview);
+            });
+            
+            // 更新Cron预览
+            function updateCronPreview() {
+                let cronExpression = '';
+                
+                cronFields.forEach(field => {
+                    const select = document.getElementById('cron' + field);
+                    const customInput = document.getElementById('cron' + field + 'Custom');
+                    
+                    let value = select.value;
+                    if (value === 'custom') {
+                        value = customInput.value || '0';
+                    }
+                    
+                    cronExpression += value + ' ';
+                });
+                
+                document.getElementById('cronPreview').value = cronExpression.trim();
+            }
+            
+            // 应用Cron表达式
+            document.getElementById('applyCron').addEventListener('click', function() {
+                cronInput.value = document.getElementById('cronPreview').value;
+                cronModal.hide();
+            });
+            
+            // CURL解析器
+            const curlParserBtn = document.createElement('button');
+            curlParserBtn.type = 'button';
+            curlParserBtn.className = 'btn btn-outline-primary mb-3';
+            curlParserBtn.innerHTML = '<i class="bi bi-code-slash"></i> 从CURL命令填充';
+            
+            // 将按钮插入到表单顶部
+            taskForm.insertBefore(curlParserBtn, taskForm.firstChild);
+            
+            // CURL解析器模态框
+            const curlParserModal = document.createElement('div');
+            curlParserModal.className = 'modal fade';
+            curlParserModal.id = 'curlParserModal';
+            curlParserModal.tabIndex = '-1';
+            curlParserModal.setAttribute('aria-labelledby', 'curlParserModalLabel');
+            curlParserModal.setAttribute('aria-hidden', 'true');
+            
+            curlParserModal.innerHTML = `
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content bg-dark text-light">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="curlParserModalLabel">从CURL命令填充</h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label for="curlCommand" class="form-label">粘贴CURL命令</label>
+                                <textarea class="form-control" id="curlCommand" rows="5" placeholder="curl -X POST -H 'Content-Type: application/json' -d '{\"key\":\"value\"}' https://example.com/api"></textarea>
+                            </div>
+                            <div id="curlParseResult" class="alert alert-info" style="display:none;"></div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                            <button type="button" class="btn btn-primary" id="parseCurl">解析并填充</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(curlParserModal);
+            
+            // 初始化模态框
+            const curlModal = new bootstrap.Modal(document.getElementById('curlParserModal'));
+            
+            // 打开CURL解析器
+            curlParserBtn.addEventListener('click', function() {
+                document.getElementById('curlCommand').value = '';
+                document.getElementById('curlParseResult').style.display = 'none';
+                curlModal.show();
+            });
+            
+            // 解析CURL命令
+            document.getElementById('parseCurl').addEventListener('click', function() {
+                const curlCommand = document.getElementById('curlCommand').value.trim();
+                if (!curlCommand) {
+                    document.getElementById('curlParseResult').textContent = '请输入CURL命令';
+                    document.getElementById('curlParseResult').style.display = 'block';
+                    return;
+                }
+                
+                try {
+                    const parsedCurl = parseCurlCommand(curlCommand);
+                    fillFormFromCurl(parsedCurl);
+                    curlModal.hide();
+                } catch (error) {
+                    document.getElementById('curlParseResult').textContent = '解析CURL命令失败: ' + error.message;
+                    document.getElementById('curlParseResult').style.display = 'block';
+                }
+            });
+            
+            // 改进CURL命令解析函数，特别是处理Windows风格的转义字符
+            function parseCurlCommand(curlCommand) {
+                const result = {
+                    method: 'GET',
+                    url: '',
+                    headers: {},
+                    body: '',
+                    formData: {}
+                };
+
+                try {
+                    // 清理Windows风格的转义字符
+                    curlCommand = curlCommand.replace(/\^/g, '');
+                    
+                    // 特别处理JSON请求体
+                    let dataRawMatch = curlCommand.match(/--data-raw\s+["'](\{.*?\})["']/s);
+                    if (dataRawMatch && dataRawMatch[1]) {
+                        // 提取JSON请求体并清理转义字符
+                        let jsonBody = dataRawMatch[1].replace(/\\"/g, '"');
+                        result.body = jsonBody;
+                        result.method = 'POST'; // 如果有请求体，默认为POST
+                    }
+                    
+                    // 提取URL
+                    const urlMatch = curlCommand.match(/(https?:\/\/[^\s"']+)/);
+                    if (urlMatch) {
+                        result.url = urlMatch[0];
+                    }
+                    
+                    // 提取请求方法
+                    const methodMatch = curlCommand.match(/-X\s+["'](\w+)["']/);
+                    if (methodMatch && methodMatch[1]) {
+                        result.method = methodMatch[1].toUpperCase();
+                    }
+                    
+                    // 提取请求头
+                    const headerMatches = curlCommand.matchAll(/-H\s+["']([^:]+):\s*([^"']+)["']/g);
+                    for (const match of headerMatches) {
+                        if (match[1] && match[2]) {
+                            result.headers[match[1].trim()] = match[2].trim();
+                        }
+                    }
+                    
+                    // 如果没有找到请求体但有--data参数
+                    if (!result.body) {
+                        const dataMatch = curlCommand.match(/--data\s+["'](.+?)["']/);
+                        if (dataMatch && dataMatch[1]) {
+                            result.body = dataMatch[1];
+                            result.method = 'POST';
+                        }
+                    }
+                    
+                    console.log("解析结果:", result);
+                    return result;
+                } catch (error) {
+                    console.error('解析CURL命令失败:', error);
+                    throw new Error('解析失败: ' + error.message);
+                }
+            }
+            
+            // 替换现有的表单填充函数为您提供的更简洁版本
+            function fillFormFromCurl(parsedCurl) {
+                try {
+                    // 填充 URL
+                    document.getElementById('url').value = parsedCurl.url || '';
+
+                    // 填充请求方法
+                    const methodSelect = document.getElementById('method');
+                    const validMethods = ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'];
+                    methodSelect.value = validMethods.includes(parsedCurl.method) ? parsedCurl.method : 'GET';
+                    methodSelect.dispatchEvent(new Event('change')); // 触发显示/隐藏字段
+
+                    // 清空并填充请求头
+                    const headersContainer = document.getElementById('headers-container');
+                    headersContainer.innerHTML = '';
+                    if (Object.keys(parsedCurl.headers).length > 0) {
+                        for (const [key, value] of Object.entries(parsedCurl.headers)) {
+                            addKeyValuePair(headersContainer, key, value, 'header');
+                        }
+                    } else {
+                        addKeyValuePair(headersContainer, 'Content-Type', 'application/json', 'header');
+                    }
+
+                    // 填充请求体
+                    document.getElementById('body').value = parsedCurl.body || '';
+
+                    // 清空并填充表单数据
+                    const formDataContainer = document.getElementById('form-data-container');
+                    formDataContainer.innerHTML = '';
+                    if (Object.keys(parsedCurl.formData).length > 0) {
+                        for (const [key, value] of Object.entries(parsedCurl.formData)) {
+                            addKeyValuePair(formDataContainer, key, value, 'form-data');
+                        }
+                    }
+
+                    showToast('成功', 'CURL 命令已成功解析并填充表单', 'success');
+                } catch (error) {
+                    console.error('填充表单失败:', error);
+                    showToast('错误', '填充表单失败: ' + error.message, 'danger');
+                }
+            }
+            
+            // 辅助函数：添加键值对
+            function addKeyValuePair(container, key, value, type) {
+                const keyClass = type === 'header' ? 'header-key' : 'form-data-key';
+                const valueClass = type === 'header' ? 'header-value' : 'form-data-value';
+                
+                const keyValuePair = document.createElement('div');
+                keyValuePair.className = 'key-value-pair';
+                keyValuePair.innerHTML = `
+                    <input type="text" class="form-control ${keyClass}" placeholder="键" value="${escapeHtml(key)}">
+                    <input type="text" class="form-control ${valueClass}" placeholder="值" value="${escapeHtml(value)}">
+                    <button type="button" class="remove-btn">
+                        <i class="bi bi-x-circle"></i>
+                    </button>
+                `;
+                container.appendChild(keyValuePair);
+                
+                keyValuePair.querySelector('.remove-btn').addEventListener('click', function() {
+                    keyValuePair.remove();
+                });
+            }
+            
+            // 辅助函数：HTML转义
+            function escapeHtml(str) {
+                return str
+                    .replace(/&/g, "&amp;")
+                    .replace(/</g, "&lt;")
+                    .replace(/>/g, "&gt;")
+                    .replace(/"/g, "&quot;")
+                    .replace(/'/g, "&#039;");
+            }
+
+            // 添加测试请求按钮到表单底部
+            const submitButton = document.querySelector('button[type="submit"]');
+            if (submitButton) {
+                // 创建测试请求按钮
+                const testRequestBtn = document.createElement('button');
+                testRequestBtn.type = 'button';
+                testRequestBtn.className = 'btn btn-outline-warning me-2';
+                testRequestBtn.innerHTML = '<i class="bi bi-lightning"></i> 测试请求';
+                testRequestBtn.id = 'test-request-btn';
+                
+                // 插入测试按钮到提交按钮前面
+                submitButton.parentNode.insertBefore(testRequestBtn, submitButton);
+                
+                // 添加测试请求功能
+                testRequestBtn.addEventListener('click', function() {
+                    // 收集表单数据
+                    const url = document.getElementById('url').value.trim();
+                    if (!url) {
+                        showToast('错误', '请输入请求URL', 'danger');
+                        return;
+                    }
+                    
+                    const method = document.getElementById('method').value;
+                    const proxyHost = document.getElementById('proxyHost').value.trim();
+                    const proxyPort = document.getElementById('proxyPort').value.trim();
+                    
+                    // 收集请求头
+                    const headers = {};
+                    document.querySelectorAll('.header-key').forEach((keyInput, index) => {
+                        const key = keyInput.value.trim();
+                        const valueInput = document.querySelectorAll('.header-value')[index];
+                        const value = valueInput.value.trim();
+                        if (key && value) {
+                            headers[key] = value;
+                        }
+                    });
+                    
+                    // 收集请求体
+                    const body = document.getElementById('body').value.trim();
+                    
+                    // 收集表单数据
+                    const formData = {};
+                    document.querySelectorAll('.form-data-key').forEach((keyInput, index) => {
+                        const key = keyInput.value.trim();
+                        const valueInput = document.querySelectorAll('.form-data-value')[index];
+                        const value = valueInput.value.trim();
+                        if (key && value) {
+                            formData[key] = value;
+                        }
+                    });
+                    
+                    // 构建请求数据
+                    const requestData = {
+                        method: method,
+                        url: url,
+                        headers: headers,
+                        body: body,
+                        formData: formData
+                    };
+                    
+                    // 添加代理信息（如果有）
+                    if (proxyHost) {
+                        requestData.proxyHost = proxyHost;
+                    }
+                    
+                    if (proxyPort) {
+                        requestData.proxyPort = parseInt(proxyPort);
+                    }
+                    
+                    // 显示加载状态
+                    testRequestBtn.disabled = true;
+                    testRequestBtn.innerHTML = '<span class="loading-spinner"></span> 测试中...';
+                    
+                    // 发送测试请求
+                    fetch('/api/test/request', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(requestData)
+                    })
+                    .then(response => {
+                        // 添加错误处理
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! Status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        // 恢复按钮状态
+                        testRequestBtn.disabled = false;
+                        testRequestBtn.innerHTML = '<i class="bi bi-lightning"></i> 测试请求';
+                        
+                        if (data.code === 0) {
+                            // 创建结果模态框
+                            showTestResultModal(data.data);
+                        } else {
+                            showToast('错误', data.msg || '测试请求失败', 'danger');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        testRequestBtn.disabled = false;
+                        testRequestBtn.innerHTML = '<i class="bi bi-lightning"></i> 测试请求';
+                        // 提供更详细的错误信息
+                        showToast('错误', `请求失败: ${error.message}`, 'danger');
+                    });
+                });
+            }
+            
+            // 修改测试结果模态框函数，添加复制按钮
+            function showTestResultModal(result) {
+                // 如果已存在模态框，先移除
+                const existingModal = document.getElementById('testResultModal');
+                if (existingModal) {
+                    existingModal.remove();
+                }
+                
+                // 创建新的模态框
+                const modal = document.createElement('div');
+                modal.className = 'modal fade';
+                modal.id = 'testResultModal';
+                modal.tabIndex = '-1';
+                modal.setAttribute('aria-labelledby', 'testResultModalLabel');
+                modal.setAttribute('aria-hidden', 'true');
+                
+                // 格式化响应内容
+                let formattedResponse = '';
+                if (result.body) {
+                    formattedResponse = result.body;
+                    try {
+                        // 尝试格式化JSON
+                        if (formattedResponse.startsWith('{') || formattedResponse.startsWith('[')) {
+                            formattedResponse = JSON.stringify(JSON.parse(formattedResponse), null, 2);
+                        }
+                    } catch (e) {
+                        // 如果不是有效的JSON，保持原样
+                        console.error('格式化JSON失败:', e);
+                    }
+                } else {
+                    formattedResponse = '无响应内容';
+                }
+                
+                // 处理响应头
+                let headersText = '';
+                if (result.headers && Object.keys(result.headers).length > 0) {
+                    for (const [key, value] of Object.entries(result.headers)) {
+                        // 处理数组形式的头部值
+                        const headerValue = Array.isArray(value) ? value.join(', ') : value;
+                        headersText += `${key}: ${headerValue}\n`;
+                    }
+                } else {
+                    headersText = '无响应头';
+                }
+                
+                // 生成CURL命令（如果后端没有提供）
+                let curlCommand = result.curl || '';
+                if (!curlCommand) {
+                    // 从表单中获取请求数据
+                    const url = document.getElementById('url').value.trim();
+                    const method = document.getElementById('method').value;
+                    
+                    // 收集请求头
+                    const headers = {};
+                    document.querySelectorAll('.header-key').forEach((keyInput, index) => {
+                        const key = keyInput.value.trim();
+                        const valueInput = document.querySelectorAll('.header-value')[index];
+                        const value = valueInput.value.trim();
+                        if (key && value) {
+                            headers[key] = value;
+                        }
+                    });
+                    
+                    // 收集请求体
+                    const body = document.getElementById('body').value.trim();
+                    
+                    // 构建CURL命令
+                    curlCommand = `curl -X ${method} "${url}"`;
+                    
+                    // 添加请求头
+                    for (const [key, value] of Object.entries(headers)) {
+                        curlCommand += ` \\\n  -H "${key}: ${value}"`;
+                    }
+                    
+                    // 添加请求体
+                    if (body && (method === 'POST' || method === 'PUT' || method === 'PATCH')) {
+                        curlCommand += ` \\\n  -d '${body}'`;
+                    }
+                }
+                
+                // 设置模态框内容
+                modal.innerHTML = `
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content bg-dark text-light">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="testResultModalLabel">测试请求结果</h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <h6>请求信息</h6>
+                                        <span class="badge ${result.statusCode >= 200 && result.statusCode < 300 ? 'bg-success' : 'bg-danger'}">
+                                            状态码: ${result.statusCode || 'N/A'}
+                                        </span>
+                                    </div>
+                                    <div class="curl-command">
+                                        <button class="copy-btn" data-copy-target="curl-content">
+                                            <i class="bi bi-clipboard"></i> 复制
+                                        </button>
+                                        <code id="curl-content">${escapeHtml(curlCommand) || '无请求信息'}</code>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <h6>响应头</h6>
+                                    <pre class="task-result">${escapeHtml(headersText)}</pre>
+                                </div>
+                                
+                                <div>
+                                    <h6>响应内容</h6>
+                                    <div class="response-container">
+                                        <button class="copy-btn" data-copy-target="response-content">
+                                            <i class="bi bi-clipboard"></i> 复制
+                                        </button>
+                                        <pre id="response-content" class="task-result" style="max-height: 300px;">${escapeHtml(formattedResponse)}</pre>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                // 添加到文档
+                document.body.appendChild(modal);
+                
+                // 显示模态框
+                const testResultModal = new bootstrap.Modal(document.getElementById('testResultModal'));
+                testResultModal.show();
+                
+                // 添加复制功能
+                document.querySelectorAll('.copy-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const targetId = this.getAttribute('data-copy-target');
+                        const textToCopy = document.getElementById(targetId).textContent;
+                        
+                        navigator.clipboard.writeText(textToCopy).then(() => {
+                            // 显示复制成功状态
+                            this.innerHTML = '<i class="bi bi-check"></i> 已复制';
+                            this.classList.add('copied');
+                            
+                            // 2秒后恢复原状
+                            setTimeout(() => {
+                                this.innerHTML = '<i class="bi bi-clipboard"></i> 复制';
+                                this.classList.remove('copied');
+                            }, 2000);
+                        }).catch(err => {
+                            console.error('复制失败:', err);
+                            showToast('错误', '复制失败，请手动复制', 'danger');
+                        });
+                    });
+                });
+            }
+        });
+    </script>
+</body>
+</html>
