@@ -23,7 +23,7 @@ public class EmailUtils {
     private static final String SMTP_HOST = System.getProperty("mail.smtp.host", "smtp.qiye.aliyun.com");
     private static final String SMTP_PORT = System.getProperty("mail.smtp.port", "465");
     private static final String USERNAME = System.getProperty("mail.username", "linux@xlike.email");
-    private static final String PASSWORD = System.getProperty("mail.password", "1jGbVKez74jrQ5W1");
+    private static final String PASSWORD = System.getProperty("mail.password", "替换为自己的");
     private static final String FROM_EMAIL = System.getProperty("mail.from", "linux@xlike.email");
     private static final String SMTP_AUTH = System.getProperty("mail.smtp.auth", "true");
     private static final String PROTOCOL = System.getProperty("mail.protocol", "smtp");
