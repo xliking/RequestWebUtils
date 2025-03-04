@@ -1,6 +1,5 @@
 package xlike.top.service;
 
-import jakarta.annotation.PostConstruct;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 import org.slf4j.Logger;
@@ -12,6 +11,7 @@ import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.support.CronTrigger;
 import org.springframework.stereotype.Service;
 import xlike.top.bean.dto.ScheduledTaskDTO;
+import xlike.top.utils.EmailUtils;
 import xlike.top.utils.OkHttpUtils;
 import xlike.top.utils.RedisUtil;
 
@@ -123,6 +123,9 @@ public class ScheduledTaskService implements ApplicationListener<ApplicationRead
     /**
      * 执行 HTTP 请求，并记录请求结果到 Redis
      */
+    /**
+     * 执行 HTTP 请求，并记录请求结果到 Redis，同时发送邮件通知
+     */
     private void executeHttpRequest(ScheduledTaskDTO config) throws IOException {
         String method = config.getMethod().toUpperCase();
         String url = config.getUrl();
@@ -179,8 +182,66 @@ public class ScheduledTaskService implements ApplicationListener<ApplicationRead
 
             logger.info("定时任务执行成功，任务ID: {}, taskName: {}, 响应状态码: {}",
                     config.getTaskId(), config.getTaskName(), response.code());
+            // Send email if a valid email is provided
+            if (config.getEmail() != null && !config.getEmail().isEmpty()) {
+                String subject = "Task 任务: " + config.getTaskName() +
+                        " (ID: " + config.getTaskId() + ") at " +
+                        new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
+                try {
+                    boolean isJson = isValidJson(responseBody);
+                    if (isJson) {
+                        EmailUtils.sendJsonHtmlEmail(config.getEmail(), subject, responseBody);
+                    } else {
+                        EmailUtils.sendHtmlEmail(config.getEmail(), subject, responseBody);
+                    }
+                } catch (Exception e) {
+                    logger.error("Failed to send email for task ID: " + config.getTaskId(), e);
+                }
+            }
         } finally {
             OkHttpUtils.closeResponse(response);
+        }
+    }
+
+    /**
+     * 验证邮箱是否有效且具有常用后缀
+     */
+    private boolean isValidEmail(String email) {
+        if (email == null || email.isEmpty()) {
+            return false;
+        }
+        // Basic email format validation
+        String emailRegex = "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$";
+        if (!email.matches(emailRegex)) {
+            return false;
+        }
+        // Check for common domain suffixes
+        String domain = email.split("@")[1].toLowerCase();
+        List<String> commonDomains = Arrays.asList(
+                "gmail.com", "yahoo.com", "hotmail.com", "outlook.com", "linux.do",
+                "aol.com", "icloud.com", "qq.com", "163.com", "sina.com"
+        );
+        return commonDomains.contains(domain);
+    }
+
+
+    /**
+     * Checks if a string is valid JSON
+     *
+     * @param jsonString the string to check
+     * @return true if the string is valid JSON, false otherwise
+     */
+    private boolean isValidJson(String jsonString) {
+        try {
+            new org.json.JSONObject(jsonString);
+            return true;
+        } catch (org.json.JSONException ex) {
+            try {
+                new org.json.JSONArray(jsonString);
+                return true;
+            } catch (org.json.JSONException ex1) {
+                return false;
+            }
         }
     }
 

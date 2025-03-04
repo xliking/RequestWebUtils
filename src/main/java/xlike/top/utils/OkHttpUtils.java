@@ -1,6 +1,7 @@
 package xlike.top.utils;
 
 import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import okhttp3.*;
 import org.slf4j.Logger;
@@ -11,8 +12,6 @@ import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
@@ -56,8 +55,8 @@ public class OkHttpUtils {
             long endTimeMillis = System.currentTimeMillis();
             LocalDateTime endTime = LocalDateTime.now();
             DateTimeFormatter endFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-            logger.info("请求结束，当前时间: {} ,耗时 {} 毫秒，返回状态码: {}", 
-                        endTime.format(endFormatter), (endTimeMillis - startTimeMillis), response.code());
+            logger.info("请求结束，当前时间: {} ,耗时 {} 毫秒，返回状态码: {}",
+                    endTime.format(endFormatter), (endTimeMillis - startTimeMillis), response.code());
             return response;
         } catch (IOException e) {
             long errorTimeMillis = System.currentTimeMillis();
@@ -71,6 +70,9 @@ public class OkHttpUtils {
     }
 
     public static Response post(String url, Map<String, String> headers, RequestBody body, Proxy proxy) throws IOException {
+        if(body == null) {
+            body = RequestBody.create("", MediaType.get("application/json; charset=utf-8"));
+        }
         return sendRequest(url, "POST", headers, body, null, null, proxy);
     }
 

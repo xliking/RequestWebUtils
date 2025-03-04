@@ -444,6 +444,15 @@
                         
                         <div class="row mb-3">
                             <div class="col-md-6">
+                                <label for="email" class="form-label">邮箱地址</label>
+                                <input type="email" class="form-control" id="email" placeholder="请输入您的邮箱地址" required>
+                                <div class="form-text text-muted">请求结果将发送到该邮箱，确保填写正确。</div>
+                                <div class="form-text text-muted">支持的邮箱后缀: gmail.com, yahoo.com, hotmail.com, outlook.com, linux.do, aol.com, icloud.com, qq.com, 163.com, sina.com</div>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
                                 <label for="method" class="form-label">请求方式</label>
                                 <select class="form-select" id="method" required>
                                     <option value="GET">GET</option>
@@ -655,6 +664,7 @@
                     url: document.getElementById('url').value,
                     cron: document.getElementById('cron').value,
                     body: document.getElementById('body').value,
+                    email: document.getElementById('email').value, 
                     headers: {},
                     formData: {}
                 };

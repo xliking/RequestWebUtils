@@ -51,6 +51,11 @@ public class ScheduledTaskDTO {
     private String body;
 
     /**
+     * 邮箱，接收通知的邮箱地址
+     */
+    private String email;
+
+    /**
      * 表单数据
      */
     private Map<String, String> formData;

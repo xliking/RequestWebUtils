@@ -15,9 +15,9 @@ linux-do:
   oauth2:
     client:
       registration:
-        client-id: 替换为自己的路径
-        client-secret: 替换为自己的路径
-        redirect-uri:  https://替换为自己的路径/oauth2/callback
+        client-id: sxBugtXPNGrrKshlKeY8YELJWLiRZuUv
+        client-secret: H20CcxJWEX9FYikaSIzNpWTuzqXudZql
+        redirect-uri:  https://local.3www.me/oauth2/callback
         authorization-grant-type: authorization_code
         scope: read,write
       provider:

@@ -11,5 +11,6 @@ D:\JavaProjects\online_request\src\main\java\xlike\top\controller\TestRequestCon
 D:\JavaProjects\online_request\src\main\java\xlike\top\OnlineRequestApplication.java
 D:\JavaProjects\online_request\src\main\java\xlike\top\service\ScheduledTaskService.java
 D:\JavaProjects\online_request\src\main\java\xlike\top\tasks\DataCleanupService.java
+D:\JavaProjects\online_request\src\main\java\xlike\top\utils\EmailUtils.java
 D:\JavaProjects\online_request\src\main\java\xlike\top\utils\OkHttpUtils.java
 D:\JavaProjects\online_request\src\main\java\xlike\top\utils\RedisUtil.java
